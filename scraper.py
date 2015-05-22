@@ -18,11 +18,12 @@ for x in range(0, 300, 10):
     cat = root.cssselect('span.category-str-list')
     
     for i in range(len(name)):
-        my_cat = cat[i]
-        my_cats = my_cat.cssselect('a')
         category = ""
-        for j in range(len(my_cats)):
-            category += ", " + my_cats[j].text.encode('utf-8').decode('utf-8').strip()
+        if cat:
+            my_cat = cat[i]
+            my_cats = my_cat.cssselect('a')
+            for j in range(len(my_cats)):
+                category += ", " + my_cats[j].text.encode('utf-8').decode('utf-8').strip()
             
         scraperwiki.sqlite.save(unique_keys=["pk"], data={
                 'pk': index,
