@@ -14,8 +14,8 @@ address = root.cssselect('address')
 phone = root.cssselect('span.biz-phone')
 
 for i in range(len(name)):
-    print name[i].text
-    print address[i].text
-    print phone[i].text
+    print name[i].text.encode('utf8')
+    print address[i].text.encode('utf8')
+    print phone[i].text.encode('utf8')
 
     
