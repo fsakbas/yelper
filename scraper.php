@@ -1,16 +1,72 @@
-<?php
-require 'scraperwiki.php';
+import itertools as it
+import json
+import scraperwiki
+import pandas
 
-# Blank PHP
-$url = "http://www.yelp.com/search?find_desc=gym&find_loc=Richmond+Hill%2C+ON&ns=1#l=p:ON:Toronto::%5BAlexandra_Park,Bayview_Village,Beaconsfield_Village,Bickford_Park,Bloor-West_Village,Bloordale_Village,Brockton_Village,Cabbagetown,Casa_Loma,Chinatown,Christie_Pits,Church-Wellesley_Village,City_Place,Corktown,Corso_Italia,Deer_Park,Discovery_District,Distillery_District,Dovercourt,Downsview,Downtown_Core,Dufferin_Grove,East_York,Entertainment_District,Etobicoke,Financial_District,Greektown,Harbourfront,High_Park,Hogg's_Hollow,Kensington_Market,Koreatown,Lawrence_Park,Leslieville,Liberty_Village,Little_Italy,Little_Portugal,Moore_Park,Mount_Pleasant_and_Davisville,New_Toronto,Niagara,Ossington_Strip,Palmerston,Parkdale,Queen_Street_West,Rexdale,Riverdale,Roncesvalles,Rosedale,Ryerson,Scarborough,Seaton_Village,South_Hill,St._Lawrence,Summer_Hill,Swansea,The_Annex,The_Beach,The_Danforth,The_Junction,Trinity_Bellwoods,University_of_Toronto,Upper_Beach,Wallace_Emerson,West_Don_Lands,West_Queen_West,Willowdale,Wychwood,Yonge_and_Eglinton,Yonge_and_St._Clair,Yorkville%5D";
-$html = scraperWiki::scrape($url);
+# <codecell>
 
-require 'scraperwiki/simple_html_dom.php';
-$dom = new simple_html_dom();
-$dom->load($html);
-foreach($dom->find(".businessresult") as $data){
-    $img = $data->find(".photo-img");
-    print $img[0]->plaintext;
-}
+## Consts
+PLAYER_DATA_URL = "http://fantasy.premierleague.com/web/api/elements/"
 
-?>
+# <codecell>
+
+def ExtractPlayerDF(Data):
+    colNames = ['Date', 'Round', 'Opponent', 'MP', 'GS', 'A', 'CS', 'GC', 'OG', 'PS',
+                'PM', 'YC', 'RC', 'S', 'B', 'ESP', 'BPS', 'NT', 'Value', 'Points']
+    fixtures = Data['fixture_history']['all']
+    playerDF = pandas.DataFrame(fixtures, columns = colNames)
+
+    playerDF['ID'] = Data['id']
+    playerDF['Code'] = Data['code']
+    playerDF['WebName'] = Data['web_name']
+    playerDF['FirstName'] = Data['first_name']
+    playerDF['SecondName'] = Data['second_name']
+    playerDF['Position'] = Data['type_name']
+    playerDF['Team'] = Data['team_name']
+
+    colOrder = ['ID', 'Code', 'Round', 'WebName', 'FirstName', 'SecondName', 'Position', 'Team',
+                'Date', 'Opponent', 'MP', 'GS', 'A', 'CS', 'GC', 'OG', 'PS', 'PM', 'YC',
+                'RC', 'S', 'B', 'ESP', 'BPS', 'NT', 'Value', 'Points']
+
+    return playerDF[colOrder]
+
+# <codecell>
+
+## Download data
+print '[LOG] Downloading Data Started'
+
+playersDataRaw = []
+for i in it.count(1):
+    url = PLAYER_DATA_URL + str(i)
+    try:
+        playerDataJson = scraperwiki.scrape(url)
+        playersDataRaw.append(json.loads(playerDataJson))
+        print '[LOG] Player Index ', i, ' data downloaded successfully.'
+    except:
+        print '[LOG] Last Player Index downloaded: ' + str(i)
+        break
+
+print '[LOG] Downloading Data Ended'
+
+# <codecell>
+
+## Mine Players Data
+## and concat all into one DataFrame
+
+print '[LOG] Processing Data Started'
+
+PlayersData = pandas.concat(map(ExtractPlayerDF, playersDataRaw), ignore_index = True)
+
+print '[LOG] Processing Data Ended'
+
+# <codecell>
+
+## Save DataFrame to SQLite
+
+print '[LOG] Transfering data to SQLite format'
+
+scraperwiki.sqlite.save(unique_keys = ['Code', 'Round'],
+                        data = PlayersData.to_dict(orient = 'records'))
+
+
+print scraperwiki.sqlite.show_tables()
