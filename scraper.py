@@ -15,16 +15,15 @@ for x in range(0, 300, 10):
     name = root.cssselect('a.biz-name')
     address = root.cssselect('address')
     phone = root.cssselect('span.biz-phone')
-    cat = root.cssselect('span.category-str-list')
+    cat = root.cssselect('div.price-category')
     
     for i in range(len(name)):
         category = ""
-        if cat:
-            my_cat = cat[i]
-            my_cats = my_cat.cssselect('a')
-            for j in range(len(my_cats)):
-                category += ", " + my_cats[j].text.encode('utf-8').decode('utf-8').strip()
-            
+        
+        my_cats = cat[i].cssselect('span.category-str-list a')
+        for j in range(len(my_cats)):
+            category += ", " + my_cats[j].text.encode('utf-8').decode('utf-8').strip()
+        
         scraperwiki.sqlite.save(unique_keys=["pk"], data={
                 'pk': index,
                 'name': name[i].text.encode('utf-8').decode('utf-8').strip(),
