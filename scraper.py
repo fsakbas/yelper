@@ -19,9 +19,9 @@ for x in range(0, 205, 10):
     for i in range(len(name)):
         scraperwiki.sqlite.save(unique_keys=["pk"], data={
                 'pk': index,
-                'name': name[i].text,
-                'address': address[i].text,
-                'phone': phone[i].text,
+                'name': name[i].text.encode('utf-8').decode('utf-8').trim(),
+                'address': address[i].text.encode('utf-8').decode('utf-8').trim(),
+                'phone': phone[i].text.encode('utf-8').decode('utf-8').trim(),
             })
         index += 1
         #print name[i].text.encode('utf8')
