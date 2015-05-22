@@ -8,7 +8,7 @@ index = 1
 
 for x in range(0, 205, 10):
     print x
-    html = scraperwiki.scrape(yelpurl + x)
+    html = scraperwiki.scrape(yelpurl + str(x))
     time.sleep(.2)
     root = lxml.html.fromstring(html)
     
