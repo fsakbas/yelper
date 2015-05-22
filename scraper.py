@@ -13,9 +13,10 @@ name = root.cssselect('a.biz-name')
 address = root.cssselect('address')
 phone = root.cssselect('span.biz-phone')
 
-
+index = 1
 for i in range(len(name)):
-    scraperwiki.sqlite.save(data={
+    scraperwiki.sqlite.save(unique_keys=["pk"], data={
+            'pk': index++,
             'name': name[i].text.encode('utf8'),
             'address': address[i].text.encode('utf8'),
             'phone': phone[i].text.encode('utf8'),
