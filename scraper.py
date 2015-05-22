@@ -13,7 +13,7 @@ name = root.cssselect('a.biz-name')
 address = root.cssselect('address')
 phone = root.cssselect('span.biz-phone')
 
-for i in range(len(names)):
+for i in range(len(name)):
     print name[i].text
     print address[i].text
     print phone[i].text
