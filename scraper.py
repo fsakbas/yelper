@@ -1,72 +1,29 @@
-import itertools as it
-import json
 import scraperwiki
-import pandas
+import lxml.html
+import re
+import time
 
-# <codecell>
+yelpurl = "http://www.yelp.com/search?find_desc=MK+Catering&find_loc=&ns=1"
 
-## Consts
-PLAYER_DATA_URL = "http://fantasy.premierleague.com/web/api/elements/"
+html = scraperwiki.scrape(yelpurl)
+time.sleep(.2)
+root = lxml.html.fromstring(html)
+entered = "false"
+productname = ""
+rem = ""
+phonenumber = ""
 
-# <codecell>
+spans = root.cssselect('span.highlighted')
+divs = root.cssselect('div.phone')
 
-def ExtractPlayerDF(Data):
-    colNames = ['Date', 'Round', 'Opponent', 'MP', 'GS', 'A', 'CS', 'GC', 'OG', 'PS',
-                'PM', 'YC', 'RC', 'S', 'B', 'ESP', 'BPS', 'NT', 'Value', 'Points']
-    fixtures = Data['fixture_history']['all']
-    playerDF = pandas.DataFrame(fixtures, columns = colNames)
+for a in spans:
+    print a.text
 
-    playerDF['ID'] = Data['id']
-    playerDF['Code'] = Data['code']
-    playerDF['WebName'] = Data['web_name']
-    playerDF['FirstName'] = Data['first_name']
-    playerDF['SecondName'] = Data['second_name']
-    playerDF['Position'] = Data['type_name']
-    playerDF['Team'] = Data['team_name']
-
-    colOrder = ['ID', 'Code', 'Round', 'WebName', 'FirstName', 'SecondName', 'Position', 'Team',
-                'Date', 'Opponent', 'MP', 'GS', 'A', 'CS', 'GC', 'OG', 'PS', 'PM', 'YC',
-                'RC', 'S', 'B', 'ESP', 'BPS', 'NT', 'Value', 'Points']
-
-    return playerDF[colOrder]
-
-# <codecell>
-
-## Download data
-print '[LOG] Downloading Data Started'
-
-playersDataRaw = []
-for i in it.count(1):
-    url = PLAYER_DATA_URL + str(i)
-    try:
-        playerDataJson = scraperwiki.scrape(url)
-        playersDataRaw.append(json.loads(playerDataJson))
-        print '[LOG] Player Index ', i, ' data downloaded successfully.'
-    except:
-        print '[LOG] Last Player Index downloaded: ' + str(i)
-        break
-
-print '[LOG] Downloading Data Ended'
-
-# <codecell>
-
-## Mine Players Data
-## and concat all into one DataFrame
-
-print '[LOG] Processing Data Started'
-
-PlayersData = pandas.concat(map(ExtractPlayerDF, playersDataRaw), ignore_index = True)
-
-print '[LOG] Processing Data Ended'
-
-# <codecell>
-
-## Save DataFrame to SQLite
-
-print '[LOG] Transfering data to SQLite format'
-
-scraperwiki.sqlite.save(unique_keys = ['Code', 'Round'],
-                        data = PlayersData.to_dict(orient = 'records'))
+for div in divs:
+    phonenumber = div.text
 
 
-print scraperwiki.sqlite.show_tables()
+print phonenumber
+
+
+    
