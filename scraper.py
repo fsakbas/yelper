@@ -3,27 +3,19 @@ import lxml.html
 import re
 import time
 
-yelpurl = "http://www.yelp.com/search?find_desc=MK+Catering&find_loc=&ns=1"
+yelpurl = "http://www.yelp.ca/search?cflt=gyms&find_loc=Calgary%2C+AB#find_desc&start="
 
 html = scraperwiki.scrape(yelpurl)
 time.sleep(.2)
 root = lxml.html.fromstring(html)
-entered = "false"
-productname = ""
-rem = ""
-phonenumber = ""
 
-spans = root.cssselect('span.highlighted')
-divs = root.cssselect('div.phone')
+name = root.cssselect('a.biz-name')
+address = root.cssselect('address')
+phone = root.cssselect('span.biz-phone')
 
-for a in spans:
-    print a.text
-
-for div in divs:
-    phonenumber = div.text
-
-
-print phonenumber
-
+for i in range(len(names)):
+    print name[i].text
+    print address[i].text
+    print phone[i].text
 
     
